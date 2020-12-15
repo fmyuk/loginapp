@@ -1,36 +1,15 @@
 import React, { Component } from "react";
-import auth from "../modules/auth";
+import { connect } from "react-redux";
+import { fetchTodo } from "../actions/todoActions";
+import { logout } from "../actions/authActions";
 
 class TodoList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      todos: []
-    }
-  }
-
   componentDidMount() {
-    const token = auth.getToken();
-
-    fetch("http://localhost:3000/api/todos", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.todos) {
-            this.setState({ todos: data.todos });
-          } else {
-            alert(data.message);
-        }
-        })
-      .catch((err) => console.log(err))
-    })
+    this.props.fetchTodo(this.props.token);
   }
 
-  logout() {
-    auth.logout();
+  clickLogout() {
+    this.props.logout();
     this.props.history.push("/");
   }
 
@@ -40,7 +19,7 @@ class TodoList extends Component {
         <button onClick={this.logout.bind(this)}>Logout</button>
         <br />
         <ul>
-          {this.state.todos.map((todo) => {
+          {this.props.todos.map((todo) => {
             return (
               <li key={todo.id}>
                 {todo.text}
@@ -53,4 +32,18 @@ class TodoList extends Component {
   }
 }
 
-export default TodoList;
+const mapStateToProps = (state) => {
+  return {
+    token: state.auth.token,
+    todos: state.todo.todos
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    fetchTodo: (token) => dispatch(fetchTodo(token)),
+    logout: () => dispatch(logout())
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);

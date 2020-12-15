@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import auth from "../modules/auth";
+import { connect } from "react-redux";
+import { login } from "../actions/authActions";
 
 class Login extends Component {
   constructor(props) {
@@ -18,33 +19,14 @@ class Login extends Component {
     this.setState({ password: e.target.value });
   }
 
-  login() {
-    fetch("http://localhost:3000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify({
-        email: this.state.email,
-        password: this.state.password
-      })
-    })
-    .then((res) => res.json())
-        .then((data) => {
-          if (data.token) {
-            auth.login(data.token);
-            this.props.history.push("/todos");
-          } else {
-            alert(data.message);
-        }
-        })
-      .catch((err) => console.log(err))
+  clickLogin() {
+    this.props.login(this.state.email, this.state.password);
   }
 
   render() {
     return (
       <div>
-        <h3>login</h3>
+        <h3>Login</h3>
         <div>
           <label>Email</label>
           <input value={this.state.email}
@@ -56,12 +38,19 @@ class Login extends Component {
           <label>Password</label>
           <input value={this.state.password}
             onChange={this.handlePasswordInput.bind(this)}
-            placeholder="Password"/>
+            placeholder="Password"
+          />
         </div>
-        <button onClick={this.login.bind(this)}>Login</button>
+          <button onClick={this.clickLogin.bind(this)}>Login</button>
       </div>
     )
   }
 }
 
-export default Login;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    login: (email, password) => dispatch(login(email, password))
+  }
+}
+
+export default connect(null, mapDispatchToProps)(Login);
